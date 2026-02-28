@@ -2,6 +2,30 @@ const Advertisement = require('../models/Advertisement');
 
 class AdvertisementModule {
   /**
+   * Создать объявление.
+   * @param {Object} data - данные объявления без _id (shortText, description, images, userId, tags)
+   * @returns {Promise<Object>} созданное объявление
+   */
+  static async create(data) {
+    const advertisement = await Advertisement.create(data);
+    return advertisement;
+  }
+
+  /**
+   * Удалить объявление (soft delete: isDeleted = true).
+   * @param {string|import('mongoose').Types.ObjectId} id - идентификатор объявления
+   * @returns {Promise<Object|null>} обновлённое объявление или null, если не найдено
+   */
+  static async remove(id) {
+    const advertisement = await Advertisement.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    ).exec();
+    return advertisement;
+  }
+
+  /**
    * Найти объявления по параметрам.
    * @param {Object} params
    * @param {string} [params.shortText] - подстрока для поиска в shortText (регистронезависимо)
