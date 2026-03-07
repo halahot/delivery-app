@@ -4,6 +4,11 @@ const { Schema } = mongoose;
 
 const messageSchema = new Schema(
   {
+    chatId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Chat',
+      required: true,
+    },
     author: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -25,7 +30,7 @@ const messageSchema = new Schema(
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
   }
 );
 
