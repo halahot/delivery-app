@@ -1,8 +1,17 @@
 const errorHandler = (err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
+  let statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    statusCode = 400;
+  }
+  if (err.code === 'LIMIT_FILE_COUNT' || err.code === 'LIMIT_UNEXPECTED_FILE') {
+    statusCode = 400;
+  }
 
   const response = {
-    message: err.message || 'Internal Server Error',
+    error: message,
+    status: 'error',
   };
 
   if (process.env.NODE_ENV !== 'production') {
