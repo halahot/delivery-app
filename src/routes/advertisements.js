@@ -1,6 +1,7 @@
 const express = require('express');
 
 const advertisementsController = require('../controllers/advertisementsController');
+const { uploadImages } = require('../middlewares/upload');
 
 const router = express.Router();
 
