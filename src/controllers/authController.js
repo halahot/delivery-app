@@ -1,8 +1,10 @@
 const bcrypt = require('bcrypt');
+const passport = require('passport');
 
 const UserModule = require('../modules/UserModule');
 
 const SALT_ROUNDS = 10;
+const AUTH_ERROR_MESSAGE = 'Неверный логин или пароль';
 
 const signup = async (req, res, next) => {
   try {
@@ -56,7 +58,35 @@ const signup = async (req, res, next) => {
   }
 };
 
+const signin = (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) return next(err);
+
+    if (!user) {
+      return res.status(401).json({
+        error: info?.message || AUTH_ERROR_MESSAGE,
+        status: 'error',
+      });
+    }
+
+    req.login(user, (loginErr) => {
+      if (loginErr) return next(loginErr);
+
+      return res.json({
+        data: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          contactPhone: user.contactPhone,
+        },
+        status: 'ok',
+      });
+    });
+  })(req, res, next);
+};
+
 module.exports = {
   signup,
+  signin,
 };
 
