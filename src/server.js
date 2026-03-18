@@ -41,7 +41,8 @@ app.use(notFound);
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
+const HTTP_HOST = process.env.HTTP_HOST || '0.0.0.0';
+const HTTP_PORT = Number(process.env.HTTP_PORT || process.env.PORT || 3000);
 
 const server = http.createServer(app);
 
@@ -50,8 +51,8 @@ initSocket(server, sessionMiddleware);
 const start = async () => {
   try {
     await connectMongo();
-    server.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+    server.listen(HTTP_PORT, HTTP_HOST, () => {
+      console.log(`Server is running at http://${HTTP_HOST}:${HTTP_PORT}`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
