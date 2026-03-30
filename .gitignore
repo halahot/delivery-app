@@ -13,3 +13,4 @@
 /test-reports
 /test-coverage
 /test-coverage-reports
+.env
