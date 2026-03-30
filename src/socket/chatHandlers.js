@@ -1,13 +1,6 @@
 const Chat = require('../models/Chat');
 
 function registerChatHandlers(io, socket, userId) {
-  async function findChatBetweenUsers(currentUserId, receiverId) {
-    const chat = await Chat.findOne({
-      users: { $all: [currentUserId, receiverId] },
-    }).exec();
-    return chat;
-  }
-
   socket.on('getHistory', async (payload) => {
     try {
       const { receiver } = payload || {};
@@ -18,7 +11,7 @@ function registerChatHandlers(io, socket, userId) {
 
       const receiverId = String(receiver);
 
-      const chat = await findChatBetweenUsers(userId, receiverId);
+      const chat = await Chat.find([userId, receiverId]);
 
       if (!chat) {
         return socket.emit('chatHistory', []);
@@ -42,18 +35,32 @@ function registerChatHandlers(io, socket, userId) {
 
       const receiverId = String(receiver);
 
-      const message = await Chat.sendMessage({
+      await Chat.sendMessage({
         author: userId,
         receiver: receiverId,
         text,
       });
+    } catch (err) {}
+  });
+
+  const unsubscribe = Chat.subscribe(async ({ chatId, message }) => {
+    try {
+      const chat = await Chat.findById(chatId).select('users').lean();
+      if (!chat || !Array.isArray(chat.users)) return;
+
+      const users = chat.users.map((id) => String(id));
+      if (!users.includes(String(userId))) return;
 
       const fullMessage = message.toObject ? message.toObject() : message;
-
-      io.to(userId).to(receiverId).emit('newMessage', fullMessage);
+      io.to(users).emit('newMessage', fullMessage);
     } catch (err) {}
+  });
+
+  socket.on('disconnect', () => {
+    if (typeof unsubscribe === 'function') {
+      unsubscribe();
+    }
   });
 }
 
 module.exports = registerChatHandlers;
-
